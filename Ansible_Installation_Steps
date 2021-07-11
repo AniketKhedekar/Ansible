@@ -1,0 +1,64 @@
+Installation Setup on Vagrant:
+
+1. Download Oracle VM Virtual Box.
+2. Download and install Latest version of Vagrant on Windows (2.2.16).
+3. Create one vagrant box as Anisble Master and another one as Ansible Node.
+4. Steps to create ubuntu vagrant box one for ansible master and another for ansible node.
+	- Open Powershell and run below commands.
+	- vagrant init ubuntu/trusty64
+	- Update vagrant file with below details
+	   - config.vm.network "public_network", ip: "192.168.33.10" --> For master
+	   - config.vm.network "public_network", ip: "192.168.33.12" --> For Node
+	- vagrant up
+	- vagrant ssh
+	- vagrant halt {To Stop the vagrant box}
+	- vagrant destroy {To Delete the vagrant box}
+
+5. Install latest version of Ansible on Master.
+https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu
+$ sudo apt update
+$ sudo apt install software-properties-common
+$ sudo add-apt-repository ppa:ansible/ansible
+$ sudo apt update
+$ sudo apt install ansible
+
+6. Setup ssh between master and node.
+ - ssh-keygen -t rsa
+ - ssh-copy-id -i username@<ip-address> --> copies the id_rsa.pub keys to authorized_keys file in ansible node.
+ - ssh <ip-address> for password less authentication
+
+7. create inventory file under /etc/ansible/hosts and add below details.
+# Ex 2: A collection of hosts belonging to the 'webservers' group
+[Ansible_Node]
+192.168.33.12
+
+8. Check the node connection with below commands
+- ansible all -m ping
+- ansible all -m setup
+
+9. Create Playbook file and check.
+apache.yml
+
+---
+  - name: Playbook
+    hosts: Ansible_Node
+    become: yes
+    become_user: root
+    tasks:
+      - name: ensure apache is at the latest version
+        apt:
+          name: apache2
+          state: latest
+      - name: ensure apache is running
+        service:
+          name: apache2
+          state: started
+      - name: create content
+        copy:
+          content: "Congrarts on running apache"
+          dest: /var/www/html/index.html
+
+
+10. Run the playbook with below command.
+- ansible-playbook apache.yml
+
